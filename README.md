@@ -5,3 +5,6 @@
 ![](media.png)
 5. ????  
 6. понять и простить  
+
+
+Я так и не понял как можно получить user_id. Единственный способ, который я нашёл это сходить по ссылке https://botapi.tamtam.chat/chats?access_token=<TOKEN> и взять chat_id с типом dialog.
