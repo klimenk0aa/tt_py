@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2020-05-13T18:02:46Z</date>
+    <media_types>
+        <media_type>
+            <name>Tam Tam</name>
+            <type>WEBHOOK</type>
+            <parameters>
+                <parameter>
+                    <name>Message</name>
+                    <value>{ALERT.MESSAGE}</value>
+                </parameter>
+                <parameter>
+                    <name>Subject</name>
+                    <value>{ALERT.SUBJECT}</value>
+                </parameter>
+                <parameter>
+                    <name>To</name>
+                    <value>{ALERT.SENDTO}</value>
+                </parameter>
+                <parameter>
+                    <name>Token</name>
+                    <value>&lt;Token&gt;</value>
+                </parameter>
+            </parameters>
+            <max_sessions>0</max_sessions>
+            <script>var Tamtam = {&#13;
+    token: null,&#13;
+    to: null,&#13;
+    message: null,&#13;
+&#13;
+    sendMessage: function() {&#13;
+        var params = {&#13;
+            text: Tamtam.message&#13;
+        },&#13;
+        data,&#13;
+        response,&#13;
+        request = new CurlHttpRequest(),&#13;
+        url = 'https://botapi.tamtam.chat/messages?access_token=' + Tamtam.token + '&amp;chat_id=' + Tamtam.to;&#13;
+&#13;
+        request.AddHeader('Content-Type: application/json');&#13;
+        data = JSON.stringify(params);&#13;
+&#13;
+        // Remove replace() function if you want to see the exposed token in the log file.&#13;
+        Zabbix.Log(4, '[Tamtam Webhook] URL: ' + url.replace(Tamtam.token, '&lt;TOKEN&gt;'));&#13;
+        Zabbix.Log(4, '[Tamtam Webhook] params: ' + data);&#13;
+        response = request.Post(url, data);&#13;
+        Zabbix.Log(4, '[Tamtam Webhook] HTTP code: ' + request.Status());&#13;
+&#13;
+        try {&#13;
+            response = JSON.parse(response);&#13;
+        }&#13;
+        catch (error) {&#13;
+            response = null;&#13;
+        }&#13;
+&#13;
+        if (request.Status() !== 200) {&#13;
+                throw 'Unknown error. Check debug log for more information.'&#13;
+        }&#13;
+    }&#13;
+}&#13;
+&#13;
+try {&#13;
+    var params = JSON.parse(value);&#13;
+&#13;
+    if (typeof params.Token === 'undefined') {&#13;
+        throw 'Incorrect value is given for parameter &quot;Token&quot;: parameter is missing';&#13;
+    }&#13;
+&#13;
+    Tamtam.token = params.Token;&#13;
+    Tamtam.to = params.To;&#13;
+    Tamtam.message = params.Subject + '\n' + params.Message;&#13;
+    Tamtam.sendMessage();&#13;
+&#13;
+    return 'OK';&#13;
+}&#13;
+catch (error) {&#13;
+    Zabbix.Log(4, '[Tamtam Webhook] notification failed: ' + error);&#13;
+    throw 'Sending failed: ' + error + '.';&#13;
+}</script>
+            <timeout>20s</timeout>
+        </media_type>
+    </media_types>
+</zabbix_export>
